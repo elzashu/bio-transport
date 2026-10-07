@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Опрос по § 8. Транспорт веществ у животных</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #263238;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+    position: relative;
+  }
+
+  h1 {
+    text-align: center;
+    color: #00695c;
+    margin-bottom: 8px;
+    font-size: 24px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #78909c;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1;
+    min-width: 100px;
+    background: #f1f8e9;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #33691e;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .stat.correct { background: #e8f5e9; color: #2e7d32; }
+  .stat.unknown { background: #fff3e0; color: #e65100; }
+
+  .stat .value {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+
+  .progress-bar-wrapper {
+    width: 100%;
+    height: 10px;
+    background: #cfd8dc;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #43a047, #00897b);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-text {
+    text-align: right;
+    font-size: 13px;
+    color: #00796b;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: #f1f8e9;
+    border-left: 6px solid #43a047;
+    border-radius: 10px;
+    padding: 22px;
+    animation: slideIn 0.4s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .question-number {
+    display: inline-block;
+    background: #43a047;
+    color: #fff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .question {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1b5e20;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .question-text { flex: 1; }
+
+  .btn {
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  .btn-show { background: #00897b; color: #fff; }
+  .btn-show:hover { background: #00695c; transform: translateY(-2px); }
+
+  .btn-dontknow { background: #ff9800; color: #fff; }
+  .btn-dontknow:hover { background: #ef6c00; transform: translateY(-2px); }
+
+  .btn-correct { background: #43a047; color: #fff; }
+  .btn-correct:hover { background: #2e7d32; transform: translateY(-2px); }
+
+  .btn-next { background: #1976d2; color: #fff; }
+  .btn-next:hover { background: #0d47a1; transform: translateY(-2px); }
+
+  .btn-restart { background: #ef5350; color: #fff; }
+  .btn-restart:hover { background: #c62828; }
+
+  .answer {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    background: #fff8e1;
+    border-left: 4px solid #ffb300;
+    border-radius: 8px;
+    color: #5d4037;
+    line-height: 1.6;
+    font-size: 15px;
+    animation: fadeIn 0.4s ease;
+  }
+  .answer.show { display: block; }
+  .answer b { color: #bf360c; }
+
+  .marked {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .marked.show { display: block; }
+  .marked.unknown {
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    color: #e65100;
+  }
+  .marked.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #43a047;
+    color: #2e7d32;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result {
+    text-align: center;
+    padding: 20px 5px;
+    animation: fadeIn 0.5s ease;
+  }
+  .result h2 { color: #00695c; margin-bottom: 16px; font-size: 26px; }
+  .result p { font-size: 16px; color: #455a64; margin-bottom: 16px; line-height: 1.5; }
+  .result .emoji { font-size: 60px; margin-bottom: 12px; }
+
+  .final-score {
+    font-size: 20px;
+    font-weight: 800;
+    color: #00695c;
+    margin: 10px 0 20px;
+  }
+
+  .unresolved-block {
+    text-align: left;
+    margin-top: 24px;
+    padding: 18px;
+    background: #fff3e0;
+    border-left: 6px solid #ff9800;
+    border-radius: 10px;
+  }
+
+  .unresolved-block h3 {
+    color: #e65100;
+    margin-bottom: 14px;
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .unresolved-list { list-style: none; padding: 0; }
+
+  .unresolved-list li {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    font-size: 14px;
+    color: #4e342e;
+    line-height: 1.5;
+  }
+
+  .unresolved-list li .num {
+    display: inline-block;
+    background: #ff9800;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .unresolved-list li .ans {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #ffcc80;
+    color: #5d4037;
+    font-size: 13.5px;
+  }
+
+  .unresolved-list li .ans b { color: #bf360c; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🩸 Опрос по § 8</h1>
+  <p class="subtitle">Транспорт веществ у животных — проверь себя!</p>
+
+  <div class="stats">
+    <div class="stat correct">
+      ✅ Правильных
+      <span class="value" id="correctCount">0</span>
+    </div>
+    <div class="stat unknown">
+      🤷 «Не знаю»
+      <span class="value" id="unknownCount">0</span>
+    </div>
+    <div class="stat">
+      📋 Осталось
+      <span class="value" id="leftCount">38</span>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrapper">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <p class="progress-text" id="progressText">Вопрос 1 из 38</p>
+
+  <div id="quizCard"></div>
+  <div id="resultScreen" class="result hidden"></div>
+</div>
+
+<script>
+  // ===== Массив вопросов по § 8 (38 штук, без повторов) =====
+  const quizData = [
+    // Блок 1. Значение транспорта веществ
+    { q: "Что такое транспорт веществ?",
+      a: "Транспорт веществ — это доставка необходимых веществ по организму к органам, тканям, клеткам, всасывание их клетками, передвижение внутри клеток и удаление отработанных продуктов обмена." },
+    { q: "Какое значение имеет транспорт веществ для организма животного?",
+      a: "Обеспечивает поступление питательных веществ и кислорода ко всем клеткам, а также удаление ненужных продуктов обмена." },
+    { q: "Как осуществляется транспорт веществ у одноклеточных животных?",
+      a: "За счёт постоянного движения цитоплазмы (например, у амёбы обыкновенной)." },
+    { q: "Что такое гемолимфа и у кого она встречается?",
+      a: "Гемолимфа — жидкость, циркулирующая по всему телу насекомых. Она переносит питательные вещества и кислород, а также удаляет продукты обмена." },
+    { q: "Какая система переноса веществ считается самой совершенной?",
+      a: "Кровеносная система." },
+
+    // Блок 2. Кровеносная система
+    { q: "Что такое кровеносная система?",
+      a: "Совокупность сосудов и полостей, по которым осуществляется транспорт веществ в организме." },
+    { q: "Что такое кровь?",
+      a: "Специальная жидкость, циркулирующая по кровеносной системе, состав которой неоднороден." },
+    { q: "Что такое плазма крови?",
+      a: "Жидкая часть крови, состоящая из воды, растворённых солей и питательных веществ." },
+    { q: "Какие форменные элементы крови вы знаете?",
+      a: "Лейкоциты, эритроциты, тромбоциты." },
+    { q: "Какие функции выполняет кровь?",
+      a: "Приносит клеткам кислород и питательные вещества, уносит углекислый газ, излишки воды и ненужные продукты обмена." },
+    { q: "Что такое гемоглобин и какую функцию он выполняет?",
+      a: "Гемоглобин — особое вещество в эритроцитах, придающее крови красный цвет. Он способен легко присоединять и отдавать кислород." },
+    { q: "Чем отличается замкнутая кровеносная система от незамкнутой?",
+      a: "В замкнутой системе кровь движется только по сосудам (у позвоночных, моллюсков). В незамкнутой — кровь (гемолимфа) изливается в полость тела и омывает внутренние органы (у членистоногих)." },
+
+    // Блок 3. Строение кровеносной системы
+    { q: "Из каких органов состоит кровеносная система позвоночных животных?",
+      a: "Из сердца и сосудов." },
+    { q: "Что такое сердце и какую функцию оно выполняет?",
+      a: "Сердце — полый мышечный орган, работающий как насос. Оно обеспечивает движение крови по сосудам." },
+    { q: "Что такое артерии?",
+      a: "Сосуды, по которым кровь движется от сердца." },
+    { q: "Что такое вены?",
+      a: "Сосуды, по которым кровь возвращается к сердцу." },
+    { q: "Что такое капилляры и какое значение они имеют?",
+      a: "Мельчайшие сосуды, пронизывающие все органы и ткани. В них происходит обмен веществ между кровью и тканями." },
+    { q: "Какое строение имеет сердце у рыб?",
+      a: "Двухкамерное (одно предсердие и один желудочек)." },
+    { q: "Какое строение имеет сердце у земноводных?",
+      a: "Трёхкамерное (два предсердия и один желудочек)." },
+    { q: "Какое строение имеет сердце у пресмыкающихся?",
+      a: "Трёхкамерное, но в желудочке появляется неполная перегородка." },
+    { q: "Какое строение имеет сердце у птиц и млекопитающих?",
+      a: "Четырёхкамерное (два предсердия и два желудочка)." },
+    { q: "Почему у птиц и млекопитающих четырёхкамерное сердце?",
+      a: "Потому что в нём полностью разделены артериальная и венозная кровь. Это обеспечивает теплокровность — способность поддерживать постоянную температуру тела." },
+
+    // Блок 4. Круги кровообращения
+    { q: "Что такое большой круг кровообращения?",
+      a: "Путь крови от сердца к органам и тканям, а затем обратно к сердцу." },
+    { q: "Что такое малый круг кровообращения?",
+      a: "Путь крови от сердца к лёгким и обратно (лёгочный круг)." },
+    { q: "Сколько кругов кровообращения у рыб?",
+      a: "Один круг." },
+    { q: "Сколько кругов кровообращения у земноводных, пресмыкающихся, птиц и млекопитающих?",
+      a: "Два круга." },
+    { q: "Какое значение имеет разделение крови на артериальную и венозную?",
+      a: "Артериальная кровь насыщена кислородом, венозная — углекислым газом. Их разделение обеспечивает лучшее снабжение органов кислородом и теплокровность." },
+
+    // Блок 5. Лимфатическая система
+    { q: "Что такое лимфатическая система?",
+      a: "Система, состоящая из лимфатических сосудов и узлов, по которым движется лимфа." },
+    { q: "Что такое лимфа?",
+      a: "Прозрачная жидкость, похожая по составу на плазму крови." },
+    { q: "Какие функции выполняет лимфатическая система?",
+      a: "Возвращает в кровь тканевую жидкость и участвует в защите организма от болезнетворных микроорганизмов." },
+
+    // Блок 6. Термины
+    { q: "Дайте определение термину «плазма».",
+      a: "Плазма — жидкая часть крови, состоящая из воды, солей и питательных веществ." },
+    { q: "Дайте определение термину «гемоглобин».",
+      a: "Гемоглобин — вещество в эритроцитах, придающее крови красный цвет и переносящее кислород." },
+    { q: "Дайте определение термину «сердце».",
+      a: "Сердце — полый мышечный орган, работающий как насос и обеспечивающий движение крови по сосудам." },
+    { q: "Дайте определение термину «артерии».",
+      a: "Артерии — сосуды, по которым кровь движется от сердца." },
+    { q: "Дайте определение термину «вены».",
+      a: "Вены — сосуды, по которым кровь возвращается к сердцу." },
+    { q: "Дайте определение термину «капилляры».",
+      a: "Капилляры — мельчайшие сосуды, в которых происходит обмен веществ между кровью и тканями." },
+    { q: "Дайте определение термину «лимфа».",
+      a: "Лимфа — прозрачная жидкость, похожая по составу на плазму крови, движущаяся по лимфатической системе." },
+
+    // Блок 7. «Подумайте!»
+    { q: "Почему у птиц и млекопитающих четырёхкамерное сердце, а у рыб — двухкамерное?",
+      a: "У рыб один круг кровообращения, им достаточно двухкамерного сердца. У птиц и млекопитающих два круга кровообращения и теплокровность, поэтому нужно полное разделение артериальной и венозной крови — четырёхкамерное сердце." }
+  ];
+
+  // ===== Состояние =====
+  let currentIndex = 0;
+  const TOTAL = quizData.length;
+  const unresolvedIndexes = [];
+  const correctIndexes = [];
+
+  // ===== Элементы =====
+  const quizCard = document.getElementById('quizCard');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const resultScreen = document.getElementById('resultScreen');
+  const correctCountEl = document.getElementById('correctCount');
+  const unknownCountEl = document.getElementById('unknownCount');
+  const leftCountEl = document.getElementById('leftCount');
+
+  function updateStats() {
+    correctCountEl.textContent = correctIndexes.length;
+    unknownCountEl.textContent = unresolvedIndexes.length;
+    leftCountEl.textContent = TOTAL - currentIndex - 1 >= 0
+      ? TOTAL - currentIndex - 1
+      : 0;
+  }
+
+  function renderQuestion() {
+    const item = quizData[currentIndex];
+
+    const percent = (currentIndex / TOTAL) * 100;
+    progressBar.style.width = percent + '%';
+    progressText.textContent = `Вопрос ${currentIndex + 1} из ${TOTAL}`;
+
+    quizCard.innerHTML = `
+      <div class="card">
+        <div class="question">
+          <span class="question-number">${currentIndex + 1}</span>
+          <span class="question-text">${item.q}</span>
+        </div>
+
+        <button class="btn btn-show" id="showBtn">👁 Показать ответ</button>
+        <button class="btn btn-dontknow" id="dontKnowBtn">🤷 Не знаю</button>
+        <button class="btn btn-correct hidden" id="correctBtn">✅ Я ответил верно</button>
+        <button class="btn btn-next hidden" id="nextBtn">
+          ${currentIndex + 1 === TOTAL ? '🏁 Завершить' : '➡ Следующий'}
+        </button>
+
+        <div class="answer" id="answerBox">
+          <b>Ответ:</b> ${item.a}
+        </div>
+
+        <div class="marked" id="markedBox"></div>
+      </div>
+    `;
+
+    const showBtn = document.getElementById('showBtn');
+    const dontKnowBtn = document.getElementById('dontKnowBtn');
+    const correctBtn = document.getElementById('correctBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const answerBox = document.getElementById('answerBox');
+    const markedBox = document.getElementById('markedBox');
+
+    function revealAnswer() {
+      answerBox.classList.add('show');
+      showBtn.classList.add('hidden');
+      dontKnowBtn.classList.add('hidden');
+      const percentDone = ((currentIndex + 1) / TOTAL) * 100;
+      progressBar.style.width = percentDone + '%';
+    }
+
+    showBtn.addEventListener('click', () => {
+      revealAnswer();
+      correctBtn.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+    });
+
+    dontKnowBtn.addEventListener('click', () => {
+      if (!unresolvedIndexes.includes(currentIndex)) {
+        unresolvedIndexes.push(currentIndex);
+      }
+      markedBox.className = 'marked unknown show';
+      markedBox.textContent = '⚠️ Отмечено как «Не знаю» — попадёт в итоговый список.';
+      revealAnswer();
+      correctBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+      updateStats();
+    });
+
+    correctBtn.addEventListener('click', () => {
+      if (!correctIndexes.includes(currentIndex)) {
+        correctIndexes.push(currentIndex);
+      }
+      const pos = unresolvedIndexes.indexOf(currentIndex);
+      if (pos !== -1) unresolvedIndexes.splice(pos, 1);
+
+      markedBox.className = 'marked correct show';
+      markedBox.textContent = '✅ Засчитано как правильный ответ.';
+      correctBtn.classList.add('hidden');
+      updateStats();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex + 1 < TOTAL) {
+        currentIndex++;
+        renderQuestion();
+        updateStats();
+      } else {
+        showResult();
+      }
+    });
+
+    updateStats();
+  }
+
+  function showResult() {
+    quizCard.classList.add('hidden');
+    progressBar.style.width = '100%';
+    progressText.textContent = 'Готово!';
+    resultScreen.classList.remove('hidden');
+
+    const correct = correctIndexes.length;
+    const unknown = unresolvedIndexes.length;
+    const percent = Math.round((correct / TOTAL) * 100);
+
+    let unresolvedHTML = '';
+    if (unresolvedIndexes.length === 0) {
+      unresolvedHTML = `
+        <div class="unresolved-block" style="background:#e8f5e9; border-left-color:#43a047;">
+          <h3 style="color:#2e7d32;">✅ Отлично! Нет вопросов с пометкой «Не знаю»</h3>
+        </div>
+      `;
+    } else {
+      const items = unresolvedIndexes
+        .sort((a, b) => a - b)
+        .map(i => `
+          <li>
+            <span class="num">${i + 1}</span>${quizData[i].q}
+            <span class="ans"><b>Ответ:</b> ${quizData[i].a}</span>
+          </li>
+        `).join('');
+
+      unresolvedHTML = `
+        <div class="unresolved-block">
+          <h3>📌 Вопросы, отмеченные «Не знаю» (${unresolvedIndexes.length})</h3>
+          <ul class="unresolved-list">${items}</ul>
+        </div>
+      `;
+    }
+
+    resultScreen.innerHTML = `
+      <div class="emoji">🎉</div>
+      <h2>Опрос завершён!</h2>
+      <p>Ты прошёл все ${TOTAL} вопросов по § 8 «Транспорт веществ у животных».</p>
+
+      <div class="final-score">
+        ✅ Правильных: ${correct} из ${TOTAL} (${percent}%)<br>
+        🤷 «Не знаю»: ${unknown}
+      </div>
+
+      ${unresolvedHTML}
+
+      <button class="btn btn-restart" id="restartBtn" style="margin-top:20px;">🔄 Пройти заново</button>
+    `;
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      currentIndex = 0;
+      unresolvedIndexes.length = 0;
+      correctIndexes.length = 0;
+      resultScreen.classList.add('hidden');
+      quizCard.classList.remove('hidden');
+      renderQuestion();
+    });
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>
